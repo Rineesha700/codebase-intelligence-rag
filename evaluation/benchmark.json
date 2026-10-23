@@ -1,0 +1,42 @@
+[
+  {
+    "question": "How does Rich render a table?",
+    "expected_files": ["table.py"]
+  },
+  {
+    "question": "How does the Console class render output?",
+    "expected_files": ["console.py"]
+  },
+  {
+    "question": "How does Rich parse markup such as bold and colors?",
+    "expected_files": ["markup.py"]
+  },
+  {
+    "question": "How does Rich implement progress bars?",
+    "expected_files": ["progress.py"]
+  },
+  {
+    "question": "How does Rich syntax highlighting work?",
+    "expected_files": ["syntax.py"]
+  },
+  {
+    "question": "How does Rich handle logging?",
+    "expected_files": ["logging.py"]
+  },
+  {
+    "question": "How does Rich create panels around renderables?",
+    "expected_files": ["panel.py"]
+  },
+  {
+    "question": "How does Rich display a tree structure?",
+    "expected_files": ["tree.py"]
+  },
+  {
+    "question": "How does Rich handle terminal styles and colors?",
+    "expected_files": ["style.py", "color.py"]
+  },
+  {
+    "question": "How does Rich render text objects?",
+    "expected_files": ["text.py"]
+  }
+]
