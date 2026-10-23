@@ -1,286 +1,199 @@
-\# Codebase Intelligence RAG Assistant
-
-
+# Codebase Intelligence RAG Assistant
 
 A Retrieval-Augmented Generation (RAG) assistant for answering natural-language questions about the Rich Python codebase using source-code retrieval and grounded LLM generation.
 
-
-
-\## Architecture
-
-
+## Architecture
 
 ```text
-
 Rich Python Repository
-
-&#x20;       ↓
-
+        |
+        v
 Python File Ingestion
-
-&#x20;       ↓
-
+        |
+        v
 Code Chunking + Line Metadata
+        |
+        v
++-------------------+-------------------+
+| Dense Embeddings  | BM25 Keyword Search|
++-------------------+-------------------+
+        |                   |
+        +--------+----------+
+                 |
+                 v
+            RRF Fusion
+                 |
+                 v
+          Top 20 Candidates
+                 |
+                 v
+       Lightweight Reranking
+                 |
+                 v
+             Top 5 Chunks
+                 |
+                 v
+          LLM Generation
+                 |
+                 v
+     Grounded Answer + Citations
+                 |
+                 v
+        Citation Validation
+                 |
+                 v
+        Streamlit Interface
+```
 
-&#x20;       ↓
+## Key Features
 
-Dense Embeddings ────── BM25
+- Dense semantic retrieval using OpenAI embeddings
+- BM25 lexical retrieval
+- Reciprocal Rank Fusion (RRF)
+- Lightweight lexical reranking
+- Grounded LLM responses
+- Source-code citations with file and line ranges
+- Citation validation
+- Streamlit interface
+- Docker support
 
-&#x20;       ↓                  ↓
+## Dataset
 
-&#x20;       └──── RRF Fusion ──┘
+The system indexes the `rich/rich` Python source directory from the [Rich repository](https://github.com/Textualize/rich).
 
-&#x20;                ↓
+- **Python files:** 100
+- **Code chunks:** 842
 
-&#x20;         Top 20 Candidates
-
-&#x20;                ↓
-
-&#x20;      Lightweight Reranking
-
-&#x20;                ↓
-
-&#x20;            Top 5 Chunks
-
-&#x20;                ↓
-
-&#x20;         LLM Generation
-
-&#x20;                ↓
-
-&#x20;    Grounded Answer + Citations
-
-&#x20;                ↓
-
-&#x20;         Streamlit Interface
-
-\## Key Features
-
-
-
-\- Dense semantic retrieval using OpenAI embeddings
-
-\- BM25 lexical retrieval
-
-\- Reciprocal Rank Fusion (RRF)
-
-\- Lightweight lexical reranking
-
-\- Grounded LLM responses
-
-\- Source-code citations with file and line ranges
-
-\- Citation validation
-
-\- Streamlit interface
-
-\- Docker support
-
-
-
-\## Dataset
-
-
-
-The system indexes the `rich/rich` Python source directory from the Rich repository.
-
-
-
-\- Python files: 100
-
-\- Code chunks: 842
-
-
-
-\## Evaluation
-
-
+## Evaluation
 
 A fixed benchmark of 10 codebase questions was used to compare retrieval approaches.
 
-
-
 | Retrieval Method | Recall@5 |
-
 |---|---:|
-
 | Dense retrieval | 80% |
-
 | Dense + BM25 + RRF | 90% |
+| Hybrid + reranking | **100%** |
 
-| Hybrid + reranking | \*\*100%\*\* |
+These results apply to the project's 10-question benchmark and do not guarantee the same performance on other codebases or questions.
 
+## Example
 
+**Question:** How does Rich render text objects?
 
-\## Example
+The system retrieves relevant source-code chunks, reranks the candidates, and generates an answer grounded in the retrieved code.
 
-
-
-\*\*Question\*\*
-
-
-
-> How does Rich render text objects?
-
-
-
-The system retrieves relevant source-code chunks from `text.py`, reranks the candidates, and generates a grounded explanation with source citations such as:
-
-
+Example citation format:
 
 ```text
+[text.py:689-705]
+[text.py:707-717]
+```
 
-\[text.py:689-705]
+## Tech Stack
 
-\[text.py:707-717]
+- Python
+- LangChain
+- OpenAI embeddings and LLM
+- ChromaDB
+- BM25
+- Streamlit
+- Docker
 
-\## Tech Stack
+## Setup
 
-
-
-\- Python
-
-\- LangChain
-
-\- OpenAI Embeddings
-
-\- OpenAI LLM
-
-\- ChromaDB
-
-\- BM25
-
-\- Streamlit
-
-\- Docker
-
-
-
-\## Setup
-
-
-
-\### 1. Clone the repository
-
-
+### 1. Clone this repository
 
 ```bash
-
-git clone <your-github-repository-url>
-
+git clone https://github.com/Rineesha700/codebase-intelligence-rag.git
 cd codebase-intelligence-rag
-### 2. Create a virtual environment
+```
 
+### 2. Create and activate a virtual environment
 
+**Windows PowerShell:**
 
-```bash
-
+```powershell
 python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
 
-\### 3. Install dependencies
-
-
+### 3. Install dependencies
 
 ```bash
-
 pip install -r requirements.txt
+```
 
-\### 4. Configure the OpenAI API key
+### 4. Configure your OpenAI API key
 
+Copy `.env.example` to `.env` and add your own API key to the `.env` file.
 
+The `.env` file is private and should never be committed to GitHub.
 
-Copy `.env.example` to `.env` and add your API key:
+### 5. Prepare the Rich codebase
 
-
+The application expects the Rich source code at:
 
 ```text
+data/repository/rich/rich/
+```
 
-OPENAI\_API\_KEY=your\_openai\_api\_key\_here
-### 5. Run the application
-
-
+If the source code is not already present, clone the upstream repository:
 
 ```bash
+git clone --depth 1 https://github.com/Textualize/rich.git data/repository/rich
+```
 
+### 6. Run the application
+
+```bash
 streamlit run app.py
+```
 
 ## Project Structure
 
-
-
 ```text
-
 codebase-intelligence-rag/
-
 ├── app.py
-
 ├── Dockerfile
-
 ├── requirements.txt
-
 ├── .env.example
-
 ├── .gitignore
-
 ├── src/
-
-│   ├── \_\_init\_\_.py
-
+│   ├── __init__.py
 │   ├── ingestion.py
-
 │   ├── chunking.py
-
 │   ├── vectorstore.py
-
-│   ├── hybrid\_retrieval.py
-
+│   ├── hybrid_retrieval.py
 │   ├── reranker.py
-
 │   ├── generator.py
-
 │   └── citation.py
-
 ├── evaluation/
-
 │   ├── benchmark.json
-
-│   ├── evaluate\_baseline.py
-
-│   ├── evaluate\_hybrid.py
-
-│   └── evaluate\_reranker.py
-
+│   ├── evaluate_baseline.py
+│   ├── evaluate_hybrid.py
+│   └── evaluate_reranker.py
 └── data/
-
-&#x20;   └── repository/
-
-&#x20;       └── rich/
+    └── repository/
+        └── rich/
+```
 
 ## Evaluation Scripts
 
-
-
-The retrieval experiments can be reproduced using:
-
-
+Run the retrieval experiments from the project root:
 
 ```bash
-
-python evaluation/evaluate\_baseline.py
-
-python evaluation/evaluate\_hybrid.py
-
-python evaluation/evaluate\_reranker.py
+python evaluation/evaluate_baseline.py
+python evaluation/evaluate_hybrid.py
+python evaluation/evaluate_reranker.py
+```
 
 ## Future Improvements
 
+- Cross-encoder reranking
+- A larger evaluation benchmark
+- Support for additional programming languages
+- More advanced code-structure retrieval
 
+## License and Attribution
 
-\- Cross-encoder reranking
-
-\- Larger evaluation benchmark
-
-\- Support for additional programming languages
-
-\- More advanced code-structure retrieval
-
+This project uses the [Rich Python library](https://github.com/Textualize/rich). Rich is distributed under the MIT License. See the upstream repository for its license and attribution details.
